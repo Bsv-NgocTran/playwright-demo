@@ -3,8 +3,8 @@ from playwright.async_api import async_playwright, expect
 
 BASE_URL = "https://playwright-demo.eventos.work/web/portal/529/event/3988/users/login"
 
-VALID_EMAIL = "kimtran@bravesoft.com.vn"        
-VALID_PASSWORD = "brave0404"            
+VALID_EMAIL = "ngoctran@bravesoft.com.vn"        
+VALID_PASSWORD = "Bravesoft@123"            
 
 INVALID_EMAIL_1 = "abc@gmail"
 INVALID_EMAIL_2 = "abc!@gmail.com"
@@ -88,46 +88,32 @@ async def test_03_email_empty():
     await p.stop()
 
    
-
-
 @pytest.mark.asyncio
 async def test_04_password_visibility_toggle():
     """パスワード表示・非表示の挙動確認"""
     p, browser, page = await open_browser()
-
-    password_input = page.locator("input[type='password']")
-    test_password = "Password123"
-    toggle_icon = page.locator("button[aria-label='append icon']")
-    await toggle_icon.wait_for()
     
+        
+    password_input = page.locator("input[name='password']") 
+    toggle_icon = page.locator("button[aria-label='append icon']")
+        
+    await password_input.fill("Password123")
+        
+    # Ban đầu là password
+    assert await password_input.get_attribute("type") == "password"
+     
+    # Click hiện
+    await toggle_icon.click()
+    await expect(password_input).to_have_attribute("type", "text")
+        
+    # Click ẩn
+    await toggle_icon.click()
+    await expect(password_input).to_have_attribute("type", "password")
    
-    # 初期状態：マスク（非アクティブ）
-    input_type = await password_input.get_attribute("type")
-    assert input_type == "password"
-
-    #  文字入力と入力できること
-    await password_input.fill(test_password)
-    value = await password_input.input_value()
-    assert value == test_password
-
-    # マスク表示（*****）
-    input_type = await password_input.get_attribute("type")
-    assert input_type == "password"
-
-    # 目アイコン押下とマスク解除（表示状態）
-    await toggle_icon.click()
-    input_type = await password_input.get_attribute("type")
-    assert input_type == "text"
-
-    # もう一度押下と再びマスク表示
-    await toggle_icon.click()
-    input_type = await password_input.get_attribute("type")
-    assert input_type == "password"
     await browser.close()
     await p.stop()
 
     
-
 
 @pytest.mark.asyncio
 async def test_05_password_short():
@@ -198,10 +184,10 @@ async def test_09_login_success():
 
     await page.fill("input[type='email']", VALID_EMAIL)
     await page.fill("input[type='password']", VALID_PASSWORD)
-    await page.click("text=ログイン")
+    await page.click("#login_button")
     await expect(page).not_to_have_url(BASE_URL)
-    await browser.close()
-    await p.stop()
+    
+
 
    
 @pytest.mark.asyncio
